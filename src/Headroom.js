@@ -44,6 +44,13 @@ function normalizeTolerance (t) {
 }
 
 /**
+ * Helper function for normalizing offset option to object format
+ */
+function normalizeOffset (o) {
+  return o === Object(o) ? o : { down : o, up : o };
+}
+
+/**
  * UI enhancement for fixed headers.
  * Hides header when scrolling down
  * Shows header when scrolling up
@@ -58,7 +65,7 @@ function Headroom (elem, options) {
   this.elem             = elem;
   this.tolerance        = normalizeTolerance(options.tolerance);
   this.classes          = options.classes;
-  this.offset           = options.offset;
+  this.offset           = normalizeOffset(options.offset);
   this.scroller         = options.scroller;
   this.initialised      = false;
   this.onPin            = options.onPin;
@@ -309,7 +316,7 @@ Headroom.prototype = {
    */
   shouldUnpin : function (currentScrollY, toleranceExceeded) {
     var scrollingDown = currentScrollY > this.lastKnownScrollY,
-      pastOffset = currentScrollY >= this.offset;
+      pastOffset = currentScrollY >= this.offset.down;
 
     return scrollingDown && pastOffset && toleranceExceeded;
   },
@@ -322,7 +329,7 @@ Headroom.prototype = {
    */
   shouldPin : function (currentScrollY, toleranceExceeded) {
     var scrollingUp  = currentScrollY < this.lastKnownScrollY,
-      pastOffset = currentScrollY <= this.offset;
+      pastOffset = currentScrollY <= this.offset.up;
 
     return (scrollingUp && toleranceExceeded) || pastOffset;
   },
@@ -339,10 +346,19 @@ Headroom.prototype = {
       return;
     }
 
-    if (currentScrollY <= this.offset ) {
-      this.top();
-    } else {
-      this.notTop();
+    if(scrollDirection == 'down') {
+      if (currentScrollY <= this.offset.down ) {
+        this.top();
+      } else {
+        this.notTop();
+      }
+    }
+    else {
+      if (currentScrollY <= this.offset.up ) {
+        this.top();
+      } else {
+        this.notTop();
+      }
     }
 
     if(currentScrollY + this.getViewportHeight() >= this.getScrollerHeight()) {
